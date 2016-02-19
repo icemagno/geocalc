@@ -10,38 +10,56 @@ import hla.rti1516e.TransportationTypeHandle;
 import hla.rti1516e.exceptions.FederateInternalError;
 
 public class FederateAmbassador extends NullFederateAmbassador {
-	private Main federate;
+	private GeoControllerFederate federate;
 	
-	public FederateAmbassador( Main federate ) {
+	// The constructor. Must store the Federate to allow 
+	// interactivity
+	public FederateAmbassador( GeoControllerFederate federate ) {
 		this.federate = federate;
 	}
-	
+
 	private void log( String message )	{
 		System.out.println( "> " + message );
 	}
 	
 	@Override
-	public void provideAttributeValueUpdate(ObjectInstanceHandle theObject,
-			AttributeHandleSet theAttributes, byte[] userSuppliedTag)
+	public void attributeOwnershipAcquisitionNotification( ObjectInstanceHandle theObject,
+			AttributeHandleSet securedAttributes, byte[] userSuppliedTag) throws FederateInternalError {
+			
+		log("Ownsership acquired : " + theObject );
+	}	
+	
+	@Override
+	public void requestAttributeOwnershipRelease( ObjectInstanceHandle theObject,
+			AttributeHandleSet candidateAttributes, byte[] userSuppliedTag)
 			throws FederateInternalError {
+			//
+	}	
+	
+	@Override
+	public void removeObjectInstance(ObjectInstanceHandle theObject,
+               byte[] userSuppliedTag, OrderType sentOrdering,
+               SupplementalRemoveInfo removeInfo) {
 
-		if ( federate.getAircraftClass().isAnAircraft( theObject ) ) {
-			federate.getAircraftClass().provideAttributeValueUpdate(theObject, theAttributes);
+		if ( federate.getUnitClass().isAUnit( theObject ) ) {
+			federate.getUnitClass().removeByRTIRequest( theObject );
 		}
 		
 	}
 	
-	
+	// All new object - rtiamb.registerObjectInstance( classHandle ) -  
+	// that arrives into RTI will trigger this event
 	@Override
 	public void discoverObjectInstance( ObjectInstanceHandle theObject,
 	                                    ObjectClassHandle theObjectClass,
 	                                    String objectName ) throws FederateInternalError {
-		if ( federate.getAircraftClass().isClassOf( theObjectClass ) ) {
+		// Is the object we found a kind of Unit?
+		if ( federate.getUnitClass().isClassOf( theObjectClass ) ) {
 			try {
-				federate.getAircraftClass().createNew( theObject );
-				log("New Aircraft discovered");
+				// If so, create a new Unit object in our list.
+				federate.newUnit( theObjectClass, theObject  );
 			} catch ( Exception e ) {
-				e.printStackTrace();
+				log( e.getMessage() );
 			}
 		}
 		
@@ -54,13 +72,17 @@ public class FederateAmbassador extends NullFederateAmbassador {
 	                                    OrderType sentOrder,
 	                                    TransportationTypeHandle transport,
 	                                    SupplementalReflectInfo reflectInfo ) throws FederateInternalError {
-		log( "Attribute reflection" );
-		if ( federate.getAircraftClass().isAnAircraft( theObject ) ) {
-			federate.getAircraftClass().update( theAttributes, theObject );
+		// Is this attribute from a Unit?
+		if ( federate.getUnitClass().isAUnit( theObject ) ) {
+			// If so, update my Unit object attributes
+			try {
+				federate.getUnitClass().update( theAttributes, theObject );
+			} catch ( Exception e ) {
+				log( e.getMessage() );
+			}
 		}
 		
 	}
-
 
 
 }

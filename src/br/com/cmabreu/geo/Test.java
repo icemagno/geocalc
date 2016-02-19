@@ -7,11 +7,13 @@ public class Test {
 		System.out.println("azimuth " + result.getAngle() + " degrees and " + result.getTotalMeters() + " meters");		
 	}
 	
-	
 	public static void main(String[] args) throws Exception {
 		Point src = new Point(0,0);
 		Point trgt = new Point(0,1);
 		calcDistanceAndCourseBetweenPoints(src,trgt);
+		
+		System.out.println( GeoCalculator.projectCoordinates(src, 0, 110574.389).toString() );
 	}
 
 }
+
