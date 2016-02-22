@@ -25,10 +25,12 @@ public class FederateAmbassador extends NullFederateAmbassador {
 	
 	@Override
 	public void requestAttributeOwnershipRelease( ObjectInstanceHandle theObject,
-			AttributeHandleSet candidateAttributes, byte[] userSuppliedTag)
-			throws FederateInternalError {
-			
-		federate.releaseAttributeOwnership(theObject, candidateAttributes);
+			AttributeHandleSet candidateAttributes, byte[] userSuppliedTag)	throws FederateInternalError {
+		try {
+			federate.releaseAttributeOwnership(theObject, candidateAttributes);
+		} catch ( Exception e ) {
+			// This attributes may not be mine
+		}
 	}	
 	
 	@Override
